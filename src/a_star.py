@@ -45,14 +45,15 @@ def a_star_search(map_grid: MapGrid,
     open_set.insert(start_node)
     while not open_set.is_empty():
         current_node: Node = open_set.get_first()
-        if current_node == end_node:
+        if current_node.location == end_node.location:
             return reconstruct_path(current_node)
 
+        spatial_coordinate_current = map_grid.spatial_coordinate_at(current_node.location)
         for neighbour in node_graph.get_neighbours(current_node):
-            spatial_coordinate_current = map_grid.spatial_coordinate_at(current_node.location)
             spatial_coordinate_neighbour = map_grid.spatial_coordinate_at(neighbour.location)
             distance_to_neighbour_via_current = current_node.distance_from_start + heuristic(spatial_coordinate_current,
                                                                                              spatial_coordinate_neighbour)
+
             if distance_to_neighbour_via_current < neighbour.distance_from_start:
                 neighbour.distance_from_start = distance_to_neighbour_via_current
                 neighbour.heuristic_weight = neighbour.distance_from_start + heuristic(spatial_coordinate_neighbour,

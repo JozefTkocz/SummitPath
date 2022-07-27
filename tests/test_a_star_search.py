@@ -83,3 +83,45 @@ def test_a_follow_meandering_hill_climb():
                        Coordinate(x=1, y=0, z=91.),
                        Coordinate(x=0, y=0, z=90.)]
     assert coords == expected_result
+
+
+def test_a_star_returns_correct_distance():
+    grid = np.array([[10., 10., 10.],
+                     [0., 0., 0.],
+                     [0., 0., 0.]])
+    # a 1 km grid
+    my_grid = MapGrid(data=grid,
+                      bottom_left=Coordinate(0, 0),
+                      top_right=Coordinate(1000, 1000))
+    # The shortest distance is 1 km in a straight line
+    start = Coordinate(x=0, y=0)
+    end = Coordinate(x=2, y=0)
+
+    coords, distance = a_star_search(map_grid=my_grid,
+                                     start_grid_position=start,
+                                     end_grid_position=end,
+                                     heuristic=naismith_estimate)
+    # 1 km takes 15 mins by Naismith's rule -but each step is from the centre of one grid point to the centre of the
+    # next, so we've only moved 2/3rds of that distance
+    assert distance == 10
+
+
+def test_a_star_returns_correct_distance_including_elevation():
+    grid = np.array([[10., 60., 10.],
+                     [0., 0., 0.],
+                     [0., 0., 0.]])
+    # a 1 km grid
+    my_grid = MapGrid(data=grid,
+                      bottom_left=Coordinate(0, 0),
+                      top_right=Coordinate(1000, 1000))
+    # The shortest distance is 1 km in a straight line
+    start = Coordinate(x=0, y=0)
+    end = Coordinate(x=2, y=0)
+
+    coords, distance = a_star_search(map_grid=my_grid,
+                                     start_grid_position=start,
+                                     end_grid_position=end,
+                                     heuristic=naismith_estimate)
+    # 1 km takes 15 mins by Naismith's rule -but each step is from the centre of one grid point to the centre of the
+    # next, so we've only moved 2/3rds of that distance. Add 5 minutes for the 50m elevation gain
+    assert distance == 15
