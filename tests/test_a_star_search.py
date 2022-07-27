@@ -4,7 +4,7 @@ from src.models import Coordinate, MapGrid
 import numpy as np
 
 
-def test_a_star_cardinal_directions_only_returns_correct_distance():
+def test_a_star_low_cost_path_diagnonal():
     grid = np.array([[10., 0., 0., 0., 0.],
                      [0., 10., 0., 0., 0.],
                      [0., 0., 10., 0., 0.],
@@ -21,21 +21,21 @@ def test_a_star_cardinal_directions_only_returns_correct_distance():
                                      end_grid_position=end,
                                      heuristic=naismith_estimate)
 
-    expected_result = [Coordinate(x=4, y=4),
-                       Coordinate(x=3, y=3),
-                       Coordinate(x=2, y=2),
-                       Coordinate(x=1, y=1),
-                       Coordinate(x=0, y=0)]
+    expected_result = [Coordinate(x=4, y=4, z=10),
+                       Coordinate(x=3, y=3, z=10),
+                       Coordinate(x=2, y=2, z=10),
+                       Coordinate(x=1, y=1, z=10),
+                       Coordinate(x=0, y=0, z=10)]
     assert coords == expected_result
 
 
-def test_a_star_again():
+def test_a_star_low_cost_path_around_edge():
     grid = np.array([[10., 0., 0.],
                      [10., 0., 0.],
                      [0., 10., 10.]])
     my_grid = MapGrid(data=grid,
                       bottom_left=Coordinate(0, 0),
-                      top_right=Coordinate(1, 1))
+                      top_right=Coordinate(0.1, 0.1))
 
     start = Coordinate(x=0, y=0)
     end = Coordinate(x=2, y=2)
@@ -44,23 +44,22 @@ def test_a_star_again():
                                      end_grid_position=end,
                                      heuristic=naismith_estimate)
 
-    expected_result = [Coordinate(x=2, y=2),
-                       Coordinate(x=2, y=1),
-                       Coordinate(x=1, y=0),
-                       Coordinate(x=0, y=0)]
+    expected_result = [Coordinate(x=2, y=2, z=10),
+                       Coordinate(x=1, y=2, z=10),
+                       Coordinate(x=0, y=1, z=10),
+                       Coordinate(x=0, y=0, z=10)]
+
     assert coords == expected_result
 
 
-def test_a_star_again_again():
+def test_a_follow_meandering_hill_climb():
     grid = np.array([[90., 91., 92., 93., 94., 0.],
-                     [0., 97., 0., 0., 0., 95.],
-                     [0., 0., 97., 0., 96., 0.],
+                     [0., 0., 0., 0., 0., 95.],
+                     [0., 0., 0., 0., 96., 0.],
                      [0., 0., 0., 97., 0., 0.],
                      [0., 0., 0., 98., 0., 0.],
                      [0., 0., 0., 0., 99., 100.]])
-    # x->
-    # y
-    # \
+
     my_grid = MapGrid(data=grid,
                       bottom_left=Coordinate(0, 0),
                       top_right=Coordinate(1, 1))
@@ -72,8 +71,15 @@ def test_a_star_again_again():
                                      end_grid_position=end,
                                      heuristic=naismith_estimate)
 
-    expected_result = [Coordinate(x=2, y=2),
-                       Coordinate(x=2, y=1),
-                       Coordinate(x=1, y=0),
-                       Coordinate(x=0, y=0)]
+    expected_result = [Coordinate(x=5, y=5, z=100.),
+                       Coordinate(x=4, y=5, z=99.),
+                       Coordinate(x=3, y=4, z=98.),
+                       Coordinate(x=3, y=3, z=97.),
+                       Coordinate(x=4, y=2, z=96.),
+                       Coordinate(x=5, y=1, z=95.),
+                       Coordinate(x=4, y=0, z=94.),
+                       Coordinate(x=3, y=0., z=93.),
+                       Coordinate(x=2, y=0, z=92.),
+                       Coordinate(x=1, y=0, z=91.),
+                       Coordinate(x=0, y=0, z=90.)]
     assert coords == expected_result

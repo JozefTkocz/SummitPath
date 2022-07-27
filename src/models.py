@@ -42,8 +42,8 @@ class MapGrid:
 
         self.x_spacing = None
         self.y_spacing = None
-        self.x_coords = None
         self.y_coords = None
+        self.x_coords = None
         self.x_size = None
         self.y_size = None
         self._set_boundary_sizes()
@@ -53,12 +53,12 @@ class MapGrid:
         self.x_spacing = (top_right.x - bottom_left.x) / self.x_size
         self.y_spacing = (top_right.y - bottom_left.y) / self.y_size
 
-        self.x_coords = np.linspace(bottom_left.x + self.x_spacing, top_right.x, self.grid.shape[0])
-        self.y_coords = np.linspace(bottom_left.y + self.y_spacing, top_right.y, self.grid.shape[1])
+        self.y_coords = np.linspace(bottom_left.y + self.y_spacing, top_right.y, self.y_size)
+        self.x_coords = np.linspace(bottom_left.x + self.x_spacing, top_right.x, self.x_size)
 
     def _set_boundary_sizes(self):
-        self.x_size = self.grid.shape[0]
-        self.y_size = self.grid.shape[1]
+        self.y_size = self.grid.shape[0]
+        self.x_size = self.grid.shape[1]
 
     def coordinate_to_grid_position(self, coordinate: Coordinate) -> Coordinate:
         x, y = np.argmin(np.abs(self.x_coords - coordinate.x)), np.argmin(np.abs(self.y_coords - coordinate.y))
@@ -66,12 +66,12 @@ class MapGrid:
 
     def elevation_at(self, coordinate: Coordinate) -> float:
         grid_position = self.coordinate_to_grid_position(coordinate)
-        return self.grid[grid_position.x][grid_position.y]
+        return self.grid[grid_position.y][grid_position.x]
 
     def spatial_coordinate_at(self, position: Coordinate) -> Coordinate:
-        x = self.x_coords[position.x]
         y = self.y_coords[position.y]
-        return Coordinate(x=x, y=y, z=self.elevation_at(Coordinate(x=x, y=y)))
+        x = self.x_coords[position.x]
+        return Coordinate(x=x, y=y, z=self.grid[position.y][position.x])
 
     def contains_position(self, position: Coordinate) -> bool:
         contains_x = 0. <= position.x <= self.x_size
@@ -88,17 +88,17 @@ class NodeGraph:
 
     @classmethod
     def from_map_grid(cls, grid: MapGrid) -> 'NodeGraph':
-        node_grid = np.ndarray((grid.x_size, grid.y_size), dtype=np.object)
-        for x_position in range(0, grid.x_size):
-            for y_position in range(0, grid.y_size):
-                height = grid.grid[x_position][y_position]
-                node_grid[x_position][y_position] = Node(location=Coordinate(x=x_position, y=y_position, z=height),
+        node_grid = np.ndarray((grid.y_size, grid.x_size), dtype=np.object)
+        for y_position in range(0, grid.y_size):
+            for x_position in range(0, grid.x_size):
+                height = grid.grid[y_position][x_position]
+                node_grid[y_position][x_position] = Node(location=Coordinate(x=x_position, y=y_position, z=height),
                                                          heuristic_weight=np.inf, distance_from_start=np.inf)
         return cls(node_grid)
 
     def _set_boundary_sizes(self):
-        self.x_size = self.grid.shape[0]
-        self.y_size = self.grid.shape[1]
+        self.y_size = self.grid.shape[0]
+        self.x_size = self.grid.shape[1]
 
     def contains_position(self, position: Coordinate) -> bool:
         contains_x = 0. <= position.x < self.x_size
@@ -106,12 +106,12 @@ class NodeGraph:
         return contains_x and contains_y
 
     def upsert(self, node: Node):
-        x_postion = node.location.x
+        x_position = node.location.x
         y_position = node.location.y
-        self.grid[x_postion][y_position] = node
+        self.grid[y_position][x_position] = node
 
     def get_node_at(self, location: Coordinate) -> Node:
-        return self.grid[location.x][location.y]
+        return self.grid[location.y][location.x]
 
     def get_neighbours(self, node: Node) -> List[Node]:
         x_offset = Coordinate(x=1, y=0)
@@ -125,4 +125,4 @@ class NodeGraph:
                                          location + x_offset - y_offset,
                                          location - x_offset + y_offset,
                                          location - x_offset - y_offset]
-        return [self.get_node_at(l) for l in candidate_neighbour_locations if self.contains_position(l)]
+        return [self.get_node_at(loc) for loc in candidate_neighbour_locations if self.contains_position(loc)]
