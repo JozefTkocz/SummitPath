@@ -78,6 +78,15 @@ class MapGrid:
         contains_y = 0. <= position.y <= self.y_size
         return contains_x and contains_y
 
+    def subset(self, bottom_left: Coordinate, top_right: Coordinate) -> 'MapGrid':
+        grid_bottom_left = self.coordinate_to_grid_position(bottom_left)
+        grid_top_right = self.coordinate_to_grid_position(top_right)
+        subset_grid = self.grid[grid_bottom_left.y:grid_top_right.y + 1, grid_bottom_left.x:grid_top_right.x + 1]
+        grid_step = Coordinate(x=self.x_spacing, y=self.y_spacing)
+        return MapGrid(data=subset_grid,
+                       bottom_left=self.spatial_coordinate_at(grid_bottom_left) - grid_step,
+                       top_right=self.spatial_coordinate_at(grid_top_right))
+
 
 class NodeGraph:
     def __init__(self, grid: np.array):
