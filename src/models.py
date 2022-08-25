@@ -82,10 +82,15 @@ class MapGrid:
         grid_bottom_left = self.coordinate_to_grid_position(bottom_left)
         grid_top_right = self.coordinate_to_grid_position(top_right)
         subset_grid = self.grid[grid_bottom_left.y:grid_top_right.y + 1, grid_bottom_left.x:grid_top_right.x + 1]
+
+        # Conversion from grid to spatial coordinates adds a grid spacing at the first index, so undo this before
+        # initialisation
         grid_step = Coordinate(x=self.x_spacing, y=self.y_spacing)
+        subset_bottom_left = self.spatial_coordinate_at(grid_bottom_left) - grid_step
+        subset_bottom_right = self.spatial_coordinate_at(grid_top_right)
         return MapGrid(data=subset_grid,
-                       bottom_left=self.spatial_coordinate_at(grid_bottom_left) - grid_step,
-                       top_right=self.spatial_coordinate_at(grid_top_right))
+                       bottom_left=subset_bottom_left,
+                       top_right=subset_bottom_right)
 
 
 class NodeGraph:
