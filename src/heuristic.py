@@ -2,6 +2,10 @@ import numpy as np
 
 from src.models import Coordinate
 
+from typing import Callable
+
+Heuristic = Callable[[Coordinate, Coordinate], float]
+
 
 def naismith_estimate(point_1: Coordinate,
                       point_2: Coordinate) -> float:

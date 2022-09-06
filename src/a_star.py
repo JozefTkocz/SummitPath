@@ -1,12 +1,13 @@
 import bisect
-from typing import Any, Callable, List
+from typing import Any, List, Tuple
 
 import numpy as np
 
 from src.models import Coordinate, MapGrid, Node, NodeGraph
+from src.heuristic import Heuristic
 
 
-def reconstruct_path(node: Node):
+def reconstruct_path(node: Node) -> Tuple[List[Coordinate], float]:
     complete = False
     coords = []
     current_node = node
@@ -22,7 +23,7 @@ def reconstruct_path(node: Node):
 def a_star_search(map_grid: MapGrid,
                   start_grid_position: Coordinate,
                   end_grid_position: Coordinate,
-                  heuristic: Callable[[Coordinate, Coordinate], float]):
+                  heuristic: Heuristic) -> Tuple[List[Coordinate], float]:
     open_set = PriorityQueue()
 
     spatial_coordinate_end = map_grid.spatial_coordinate_at(end_grid_position)
@@ -64,8 +65,9 @@ def a_star_search(map_grid: MapGrid,
                 if not open_set.contains(neighbour):
                     open_set.insert(neighbour)
 
+    # todo: inspect more closely what happened here
     print('Got to the end and nothing happened')
-    return False
+    return [], np.inf
 
 
 class PriorityQueue:
